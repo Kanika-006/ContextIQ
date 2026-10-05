@@ -1,0 +1,113 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ContextIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafaf7;--ink:#14161a;--mut:#6b7078;--line:#e6e6e0;--acc:#0f766e;--accbg:#e6f4f1;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1113;--ink:#ececea;--mut:#9aa0a8;--line:#24272b;--acc:#2dd4bf;--accbg:#12302d;--card:#16191c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.logo{font-weight:700;font-size:22px;letter-spacing:-.02em}.logo b{color:var(--acc)}
+.tag{color:var(--mut);margin:0 0 26px}
+h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:34px 0 12px;font-weight:600}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.c small{color:var(--mut);display:block;font-size:12px}.c strong{font-size:22px;letter-spacing:-.02em}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:220px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+button{font:inherit;font-weight:600;padding:11px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;transition:.15s}
+button:hover{transform:translateY(-1px)}button.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:disabled{opacity:.5;cursor:wait}
+.two{display:grid;gap:20px;grid-template-columns:1fr 1fr}@media(max-width:800px){.two{grid-template-columns:1fr}}
+.log div{padding:7px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;animation:in .3s}
+.log i{font-style:normal;color:var(--acc);width:16px}.log em{color:var(--mut);font-style:normal;margin-left:auto;text-align:right;font-size:13px}
+.spin{display:inline-block;width:10px;height:10px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:r .7s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}@keyframes in{from{opacity:0;transform:translateY(4px)}}
+.best{border:1.5px solid var(--acc);border-radius:16px;padding:22px;background:var(--card);animation:in .4s}
+.badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--acc);background:var(--accbg);padding:3px 9px;border-radius:99px}
+.best h3{font-size:28px;letter-spacing:-.03em;margin:10px 0 4px}.stats{color:var(--mut);margin-bottom:14px}
+.best li{margin:4px 0}.alt{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.warn{background:#fff4e0;color:#7a4b00;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:14px}
+.err{background:#fde8e8;color:#8a1c1c;border-radius:10px;padding:12px 14px;margin:10px 0}
+.flow{font-weight:600;color:var(--acc);margin-bottom:10px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 2px}input[type=range]{width:100%;accent-color:var(--acc)}select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+.tl div{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}.tl b{width:110px;color:var(--acc);flex:none}.tl span{color:var(--mut);display:block;font-size:13px}
+.tot{display:flex;justify-content:space-between;font-weight:700;margin-top:10px}
+</style></head><body><div class="wrap">
+<header><div class="logo">Context<b>IQ</b></div><span id="mode" class="badge">…</span></header>
+<p class="tag">The right decision depends on your context.</p>
+
+<div class="row"><button onclick="demo(0)">Load Demo: Active Day</button><button onclick="demo(1)">Low Activity</button><button onclick="demo(2)">Tight Budget</button></div>
+
+<h2>Current context</h2><div class="grid" id="ctx"></div>
+
+<h2>Ask your agent</h2>
+<div class="row"><input type="text" id="goal" value="What should I order tonight?">
+<button class="p" id="askBtn" onclick="run('food')">Ask ContextIQ</button><button id="planBtn" onclick="run('evening')">Plan My Evening</button></div>
+
+<div class="two"><div><h2>Agent activity</h2><div class="c log" id="log"><span style="color:var(--mut)">Idle. Ask the agent to begin.</span></div>
+<div id="warn"></div></div>
+<div><h2>Cart</h2><div class="c" id="cart"></div></div></div>
+
+<h2 id="rh" style="display:none">Recommendation</h2><div id="flow"></div><div id="res"></div>
+
+<h2>What if? Change my context</h2>
+<div class="c"><div class="two"><div>
+<label>Steps: <b id="vS"></b></label><input type="range" id="steps" min="0" max="15000" step="100">
+<label>Sleep (hrs): <b id="vSl"></b></label><input type="range" id="sleep" min="3" max="10" step="0.1"></div><div>
+<label>Budget (₹): <b id="vB"></b></label><input type="range" id="budget" min="100" max="2000" step="100">
+<label>Hunger</label><select id="hunger"><option>Low</option><option>Medium</option><option>High</option></select>
+<label>Diet</label><select id="diet"><option value="vegetarian">Vegetarian</option><option value="non-vegetarian">Non-vegetarian</option><option value="any">No preference</option></select></div></div>
+<div class="row" style="margin-top:14px"><button class="p" onclick="rerun()">Re-run agent with changed context</button></div></div>
+</div>
+<script>
+const DIET={vegetarian:"Vegetarian","non-vegetarian":"Non-vegetarian",any:"No preference"};
+const DEMOS=[{steps:9200,sleep_hours:7.5,hunger:"High",budget:300,diet:"vegetarian",recent_meals:[{meal:"Dal Rice",time:"13:30"}]},
+{steps:2100,sleep_hours:6,hunger:"Medium",budget:200,diet:"vegetarian",recent_meals:[{meal:"Poha",time:"09:00"}]},
+{steps:7000,sleep_hours:7,hunger:"High",budget:100,diet:"vegetarian",recent_meals:[{meal:"Poha",time:"09:00"}]}];
+let ctx={steps:8700,sleep_hours:7.4,temperature:27,hunger:"High",budget:300,diet:"vegetarian",time:"20:15",
+recent_meals:[{meal:"Dal Rice",time:"13:30"},{meal:"Poha",time:"09:00"}],
+tasks:[{title:"Complete project report",minutes:60,priority:1},{title:"Revise ML",minutes:40,priority:2},{title:"Reply to team",minutes:10,priority:3}],available_minutes:180};
+let last="food",prev=null,busy=false;
+const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function drawCtx(){const a=ctx.steps>=7000?"high":ctx.steps>=4000?"moderate":"low",s=ctx.sleep_hours>=7?"good":ctx.sleep_hours>=6?"fair":"poor";
+$("ctx").innerHTML=[["Activity",ctx.steps.toLocaleString()+" steps",a],["Sleep",ctx.sleep_hours+" hrs",s],["Weather",ctx.temperature+"°C","clear"],["Budget","₹"+ctx.budget,"max per meal"],["Diet",DIET[ctx.diet]||ctx.diet,"preference"],["Hunger",ctx.hunger,"at "+ctx.time]]
+.map(x=>`<div class="c"><small>${x[0]}</small><strong>${x[1]}</strong><small>${x[2]}</small></div>`).join("");
+$("steps").value=ctx.steps;$("sleep").value=ctx.sleep_hours;$("budget").value=ctx.budget;$("hunger").value=ctx.hunger;$("diet").value=ctx.diet;
+$("vS").textContent=ctx.steps;$("vSl").textContent=ctx.sleep_hours;$("vB").textContent="₹"+ctx.budget}
+[["steps","steps",Number],["sleep","sleep_hours",Number],["budget","budget",Number],["hunger","hunger",String],["diet","diet",String]].forEach(([id,k,f])=>$(id).oninput=e=>{ctx[k]=f(e.target.value);drawCtx()});
+function demo(i){Object.assign(ctx,DEMOS[i]);drawCtx()}
+function logLine(e,running){return `<div><i>${running?'<span class="spin"></span>':'✓'}</i><span>${esc(e.label)}</span><em>${esc(e.summary||"")}</em></div>`}
+async function run(mode,goal){if(busy)return;busy=true;last=mode;
+ const g=goal||(mode==="evening"?"Plan my evening":$("goal").value||"What should I order tonight?");
+ ["askBtn","planBtn"].forEach(i=>$(i).disabled=true);$("log").innerHTML="";$("warn").innerHTML="";$("res").innerHTML="";
+ let result=null,err=null,html="";const draw=(r)=>$("log").innerHTML=html+(r?`<div><i><span class="spin"></span></i><span>Working…</span></div>`:"");draw(true);
+ try{const r=await fetch("/api/agent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode,goal:g,context:ctx})});
+  if(!r.ok)throw new Error("Server returned "+r.status);
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf="";
+  while(true){const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const ls=buf.split("\n");buf=ls.pop();
+   for(const l of ls){if(!l.trim())continue;const e=JSON.parse(l);
+    if(e.type==="event"){html+=logLine(e);if(/fallback|unavailable/i.test(e.label))$("warn").innerHTML=`<div class="warn">⚠ ${esc(e.label)}. Results below come from deterministic rules, not the AI agent.</div>`;draw(true)}
+    else if(e.type==="result")result=e;else if(e.type==="error")err=e.message}}
+ }catch(x){err=x.message}
+ html+=result?`<div><i>●</i><span><b>READY</b></span><em>${result.source==="agent"?"AI agent":"rule-based fallback"}</em></div>`:"";draw(false);
+ if(err)$("res").innerHTML=`<div class="err">${esc(err)} <button onclick="run('${mode}')">Retry</button></div>`;
+ if(result)show(result);busy=false;["askBtn","planBtn"].forEach(i=>$(i).disabled=false)}
+function stats(f){return `₹${f.price} · ~${f.calories} kcal · ${f.protein}g protein · ${f.preparation_time} min`}
+function show(r){$("rh").style.display="block";
+ if(r.kind==="food"){const b=r.best;
+  $("flow").innerHTML=prev?`<div class="flow">Context changed → Agent reconsidered → New recommendation: ${esc(prev)} → ${esc(b.name)}</div>`:"";prev=b.name;
+  $("res").innerHTML=`<div class="best"><span class="badge">BEST MATCH</span><h3>${esc(b.name)}</h3><div class="stats">${stats(b)}</div>
+  <b>Why ContextIQ chose this</b><ul>${r.reasons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+  <p><b>Confidence:</b> ${esc(r.confidence)} · compared ${r.compared} options</p><button class="p" onclick="addCart(${b.id})">Add to Cart</button></div>
+  <h2>Alternatives</h2>${r.alternatives.map((a,i)=>`<div class="alt"><span>${i+1}. <b>${esc(a.name)}</b> <span style="color:var(--mut)">${stats(a)}</span></span><button onclick="addCart(${a.id})">Add</button></div>`).join("")}`}
+ else{$("flow").innerHTML="";$("res").innerHTML=`<div class="c"><b>Your evening</b><p style="color:var(--mut)">${esc(r.summary)}</p><div class="tl">${r.blocks.map(b=>`<div><b>${esc(b.start)}–${esc(b.end)}</b><div>${esc(b.activity)}<span>${esc(b.reason)}</span></div></div>`).join("")}</div></div>`}
+ $("res").scrollIntoView({behavior:"smooth",block:"nearest"})}
+function rerun(){run("food","What should I order tonight?")}
+async function addCart(id){const r=await fetch("/api/cart/add",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({item_id:id})});
+ const d=await r.json();drawCart(d,d.ok?"✓ Added to cart":"")}
+async function clearCart(){drawCart(await (await fetch("/api/cart",{method:"DELETE"})).json())}
+function drawCart(d,msg){$("cart").innerHTML=(msg?`<div class="flow">${msg}</div>`:"")+(d.cart.length?d.cart.map(c=>`<div class="alt"><span>${esc(c.name)}</span><span>₹${c.price}</span></div>`).join("")+`<div class="tot"><span>Total</span><span>₹${d.total}</span></div><div class="row" style="margin-top:12px"><button onclick="clearCart()">Clear</button></div><p style="color:var(--mut);font-size:12px">Simulated cart. No real order is placed.</p>`:`<span style="color:var(--mut)">Cart is empty.</span>`)}
+fetch("/api/health").then(r=>r.json()).then(h=>{$("mode").textContent=h.llm_configured?"LLM agent ready":"No API key: fallback only"});
+fetch("/api/cart").then(r=>r.json()).then(drawCart);drawCtx();
+</script></body></html>
